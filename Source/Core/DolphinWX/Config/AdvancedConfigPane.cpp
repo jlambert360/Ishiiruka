@@ -35,6 +35,15 @@ void AdvancedConfigPane::InitializeGUI()
     new DolphinSlider(this, wxID_ANY, 100, 0, 150, wxDefaultPosition, FromDIP(wxSize(200, -1)));
   m_clock_override_text = new wxStaticText(this, wxID_ANY, "");
 
+  m_ram_override_checkbox =
+    new wxCheckBox(this, wxID_ANY, _("Enable Emulated Memory Size Override"));
+  m_mem1_override_slider =
+      new DolphinSlider(this, wxID_ANY, 24, 24, 64, wxDefaultPosition, FromDIP(wxSize(200, -1)));
+  m_mem1_override_text = new wxStaticText(this, wxID_ANY, "");
+  m_mem2_override_slider =
+      new DolphinSlider(this, wxID_ANY, 64, 64, 128, wxDefaultPosition, FromDIP(wxSize(200, -1)));
+  m_mem2_override_text = new wxStaticText(this, wxID_ANY, "");
+
   m_qos_enabled = new wxCheckBox(this, wxID_ANY, _("Enable QoS (Quality of Service) bit on packets"));
   m_adapter_warning = new wxCheckBox(this, wxID_ANY, _("Show a message when inputs are being read at a reduced rate"));
 
@@ -72,6 +81,13 @@ void AdvancedConfigPane::InitializeGUI()
       "Do so at your own risk. Please do not report "
       "bugs that occur with a non-default clock."));
 
+  wxStaticText* const ram_override_description =
+      new wxStaticText(this, wxID_ANY,
+                       _("Adjusts the emulated sizes of MEM1 and MEM2.\n\n"
+                         "Some titles may recognize the larger memory arena(s) and take "
+                         "advantage of it, though retail titles should be optimized for "
+                         "the retail memory limitations."));
+
   wxStaticText* const custom_rtc_description = new wxStaticText(
     this, wxID_ANY,
     _("This setting allows you to set a custom real time clock (RTC) separate "
@@ -79,9 +95,11 @@ void AdvancedConfigPane::InitializeGUI()
 
 #ifdef __APPLE__
   clock_override_description->Wrap(550);
+  ram_override_description->Wrap(550);
   custom_rtc_description->Wrap(550);
 #else
   clock_override_description->Wrap(FromDIP(400));
+  ram_override_description->Wrap(FromDIP(400));
   custom_rtc_description->Wrap(FromDIP(400));
 #endif
 
@@ -100,6 +118,25 @@ void AdvancedConfigPane::InitializeGUI()
   cpu_options_sizer->AddSpacer(space5);
   cpu_options_sizer->Add(clock_override_description, 0, wxEXPAND | wxLEFT | wxRIGHT, space5);
   cpu_options_sizer->AddSpacer(space5);
+
+  wxBoxSizer* const mem1_override_slider_sizer = new wxBoxSizer(wxHORIZONTAL);
+  mem1_override_slider_sizer->Add(m_mem1_override_slider, 0);
+  mem1_override_slider_sizer->Add(m_mem1_override_text, 0, wxLEFT, space5);
+  wxBoxSizer* const mem2_override_slider_sizer = new wxBoxSizer(wxHORIZONTAL);
+  mem2_override_slider_sizer->Add(m_mem2_override_slider, 0);
+  mem2_override_slider_sizer->Add(m_mem2_override_text, 0, wxLEFT, space5);
+
+  wxStaticBoxSizer* const ram_override_sizer =
+      new wxStaticBoxSizer(wxVERTICAL, this, _("Memory Override"));
+  ram_override_sizer->AddSpacer(space5);
+  ram_override_sizer->Add(m_ram_override_checkbox, 0, wxEXPAND | wxLEFT | wxRIGHT, space5);
+  ram_override_sizer->AddSpacer(space5);
+  ram_override_sizer->Add(mem1_override_slider_sizer, 0, wxEXPAND | wxLEFT | wxRIGHT, space5);
+  ram_override_sizer->AddSpacer(space5);
+  ram_override_sizer->Add(mem2_override_slider_sizer, 0, wxEXPAND | wxLEFT | wxRIGHT, space5);
+  ram_override_sizer->AddSpacer(space5);
+  ram_override_sizer->Add(ram_override_description, 0, wxEXPAND | wxLEFT | wxRIGHT, space5);
+  ram_override_sizer->AddSpacer(space5);
 
   wxStaticBoxSizer* const troubleshooting_sizer =
     new wxStaticBoxSizer(wxVERTICAL, this, _("Troubleshooting"));
@@ -128,6 +165,8 @@ void AdvancedConfigPane::InitializeGUI()
   main_sizer->AddSpacer(space5);
   main_sizer->Add(cpu_options_sizer, 0, wxEXPAND | wxLEFT | wxRIGHT, space5);
   main_sizer->AddSpacer(space5);
+  main_sizer->Add(ram_override_sizer, 0, wxEXPAND | wxLEFT | wxRIGHT, space5);
+  main_sizer->AddSpacer(space5);
   main_sizer->Add(troubleshooting_sizer, 0, wxEXPAND | wxLEFT | wxRIGHT, space5);
   main_sizer->AddSpacer(space5);
   main_sizer->Add(custom_rtc_sizer, 0, wxEXPAND | wxLEFT | wxRIGHT, space5);
@@ -145,6 +184,17 @@ void AdvancedConfigPane::LoadGUIValues()
   m_clock_override_slider->SetValue(ocFactor);
   m_clock_override_slider->Enable(oc_enabled);
   UpdateCPUClock();
+
+  bool ram_override_enabled = SConfig::GetInstance().bRAMOverrideEnable;
+  u32 mem1_size = SConfig::GetInstance().bMEM1Size;
+  u32 mem2_size = SConfig::GetInstance().bMEM2Size;
+  m_ram_override_checkbox->SetValue(ram_override_enabled);
+  m_mem1_override_slider->SetValue(mem1_size);
+  m_mem2_override_slider->SetValue(mem2_size);
+  m_mem1_override_slider->Enable(ram_override_enabled);
+  m_mem2_override_slider->Enable(ram_override_enabled);
+  UpdateRAMOverride();
+
   LoadCustomRTC();
 
   m_qos_enabled->SetValue(SConfig::GetInstance().bQoSEnabled);
@@ -162,6 +212,20 @@ void AdvancedConfigPane::BindEvents()
     this);
   m_clock_override_slider->Bind(wxEVT_UPDATE_UI, &AdvancedConfigPane::OnUpdateCPUClockControls,
     this);
+
+  m_ram_override_checkbox->Bind(wxEVT_CHECKBOX,
+    &AdvancedConfigPane::OnRAMOverrideCheckBoxChanged, this);
+  m_ram_override_checkbox->Bind(wxEVT_UPDATE_UI, &AdvancedConfigPane::OnUpdateRAMControls,
+    this);
+
+  m_mem1_override_slider->Bind(wxEVT_SLIDER, &AdvancedConfigPane::OnRAMOverrideSliderChanged,
+                                this);
+  m_mem1_override_slider->Bind(wxEVT_UPDATE_UI, &AdvancedConfigPane::OnUpdateRAMControls,
+                                this);
+  m_mem2_override_slider->Bind(wxEVT_SLIDER, &AdvancedConfigPane::OnRAMOverrideSliderChanged,
+                                this);
+  m_mem2_override_slider->Bind(wxEVT_UPDATE_UI, &AdvancedConfigPane::OnUpdateRAMControls,
+                                this);
 
   m_qos_enabled->Bind(wxEVT_CHECKBOX,
     &AdvancedConfigPane::OnQoSCheckBoxChanged, this);
@@ -196,6 +260,24 @@ void AdvancedConfigPane::OnClockOverrideSliderChanged(wxCommandEvent& event)
   SConfig::GetInstance().m_OCFactor =
     std::exp2f((m_clock_override_slider->GetValue() - 100.f) / 25.f);
   UpdateCPUClock();
+}
+
+void AdvancedConfigPane::OnRAMOverrideCheckBoxChanged(wxCommandEvent& event)
+{
+  SConfig::GetInstance().bRAMOverrideEnable = m_ram_override_checkbox->IsChecked();
+  m_mem1_override_slider->Enable(SConfig::GetInstance().bRAMOverrideEnable);
+  m_mem2_override_slider->Enable(SConfig::GetInstance().bRAMOverrideEnable);
+  UpdateRAMOverride();
+}
+
+void AdvancedConfigPane::OnRAMOverrideSliderChanged(wxCommandEvent& event)
+{
+  const u32 mem1_size = m_mem1_override_slider->GetValue() * 0x100000;
+  const u32 mem2_size = m_mem2_override_slider->GetValue() * 0x100000;
+
+  SConfig::GetInstance().bMEM1Size = mem1_size;
+  SConfig::GetInstance().bMEM2Size = mem2_size;
+  UpdateRAMOverride();
 }
 
 void AdvancedConfigPane::OnQoSCheckBoxChanged(wxCommandEvent& event)
@@ -255,6 +337,33 @@ void AdvancedConfigPane::UpdateCPUClock()
     wxString());
 }
 
+void AdvancedConfigPane::UpdateRAMOverride()
+{
+  bool ram_override_enabled = SConfig::GetInstance().bRAMOverrideEnable;
+
+  m_ram_override_checkbox->Enable(!Core::IsRunning());
+
+  m_mem1_override_slider->Enable(ram_override_enabled && !Core::IsRunning());
+  m_mem1_override_text->Enable(ram_override_enabled && !Core::IsRunning());
+
+  const u32 mem1_size = SConfig::GetInstance().bMEM1Size / 0x100000;
+  m_mem1_override_slider->SetValue(mem1_size);
+
+  m_mem1_override_text->SetLabel(SConfig::GetInstance().bRAMOverrideEnable ?
+    wxString::Format("%d MB (MEM1)", mem1_size) :
+    wxString());
+
+  m_mem2_override_slider->Enable(ram_override_enabled && !Core::IsRunning());
+  m_mem2_override_text->Enable(ram_override_enabled && !Core::IsRunning());
+
+  const u32 mem2_size = SConfig::GetInstance().bMEM2Size / 0x100000;
+  m_mem2_override_slider->SetValue(mem2_size);
+
+  m_mem2_override_text->SetLabel(SConfig::GetInstance().bRAMOverrideEnable ?
+    wxString::Format("%d MB (MEM2)", mem2_size) :
+    wxString());
+}
+
 void AdvancedConfigPane::LoadCustomRTC()
 {
   bool custom_rtc_enabled = SConfig::GetInstance().bEnableCustomRTC;
@@ -282,6 +391,17 @@ void AdvancedConfigPane::UpdateCustomRTC(const wxDateTime& datetime)
 }
 
 void AdvancedConfigPane::OnUpdateCPUClockControls(wxUpdateUIEvent& event)
+{
+  if (!Core::IsRunning())
+  {
+    event.Enable(true);
+    return;
+  }
+
+  event.Enable(!Core::WantsDeterminism());
+}
+
+void AdvancedConfigPane::OnUpdateRAMControls(wxUpdateUIEvent& event)
 {
   if (!Core::IsRunning())
   {

@@ -28,10 +28,14 @@ private:
   void BindEvents();
 
   void OnUpdateCPUClockControls(wxUpdateUIEvent&);
+  void OnUpdateRAMControls(wxUpdateUIEvent&);
   void OnUpdateRTCDateTimeEntries(wxUpdateUIEvent&);
 
   void OnClockOverrideCheckBoxChanged(wxCommandEvent&);
   void OnClockOverrideSliderChanged(wxCommandEvent&);
+
+  void OnRAMOverrideCheckBoxChanged(wxCommandEvent&);
+  void OnRAMOverrideSliderChanged(wxCommandEvent&);
 
   void OnQoSCheckBoxChanged(wxCommandEvent&);
   void OnAdapterWarningCheckBoxChanged(wxCommandEvent&);
@@ -41,6 +45,7 @@ private:
   void OnCustomRTCTimeChanged(wxDateEvent&);
 
   void UpdateCPUClock();
+  void UpdateRAMOverride();
 
   // Custom RTC
   void LoadCustomRTC();
@@ -49,6 +54,13 @@ private:
   wxCheckBox* m_clock_override_checkbox;
   DolphinSlider* m_clock_override_slider;
   wxStaticText* m_clock_override_text;
+
+  wxCheckBox* m_ram_override_checkbox;
+  DolphinSlider* m_mem1_override_slider;
+  wxStaticText* m_mem1_override_text;
+  DolphinSlider* m_mem2_override_slider;
+  wxStaticText* m_mem2_override_text;
+  wxStaticText* m_ram_override_description;
 
   wxCheckBox* m_qos_enabled;
   wxCheckBox* m_adapter_warning;

@@ -29,6 +29,7 @@
 #include "Core/CoreTiming.h"
 #include "Core/GeckoCode.h"
 #include "Core/HW/HW.h"
+#include "Core/HW/Memmap.h"
 #include "Core/HW/Wiimote.h"
 #include "Core/Host.h"
 #include "Core/Movie.h"
@@ -74,7 +75,7 @@ static Common::Event g_compressAndDumpStateSyncEvent;
 static std::thread g_save_thread;
 
 // Don't forget to increase this after doing changes on the savestate system
-static const u32 STATE_VERSION = 94;  // Last changed in PR 6456
+static const u32 STATE_VERSION = 95;  // Last changed in PR 8722
 
 // Maps savestate versions to Dolphin versions.
 // Versions after 42 don't need to be added to this list,
@@ -167,6 +168,25 @@ static std::string DoState(PointerWrap& p)
     OSD::AddMessage(StringFromFormat("Cannot load a savestate created under %s mode in %s mode",
                                      is_wii ? "Wii" : "GC", is_wii_currently ? "Wii" : "GC"),
                     OSD::Duration::NORMAL, OSD::Color::RED);
+    p.SetMode(PointerWrap::MODE_MEASURE);
+    return version_created_by;
+  }
+
+  // Check to make sure the emulated memory sizes are the same as the savestate
+  u32 state_mem1_size = Memory::GetRamSizeReal();
+  u32 state_mem2_size = Memory::GetExRamSizeReal();
+  p.Do(state_mem1_size);
+  p.Do(state_mem2_size);
+  if (state_mem1_size != Memory::GetRamSizeReal() || state_mem2_size != Memory::GetExRamSizeReal())
+  {
+    /* std::string message = "Memory size mismatch!\n"
+        "Current | MEM1 (" +
+        Memory::GetRamSizeReal() + ') (' + Memory::GetRamSizeReal() / 0x100000U + " MB) " + " MEM2(" + Memory::GetExRamSizeReal() + ")(MB)\n"
+                          "State   | MEM1 " +
+                          Memory::GetExRamSizeReal() / 0x100000U + "(" + state_mem1_size +
+                          " MB) MEM2" + state_mem1_size / 0x100000U + "({ : 3} MB) " +
+                            state_mem2_size + "" + state_mem2_size / 0x100000U;
+    OSD::AddMessage(message);*/
     p.SetMode(PointerWrap::MODE_MEASURE);
     return version_created_by;
   }

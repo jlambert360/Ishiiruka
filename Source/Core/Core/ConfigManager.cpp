@@ -35,6 +35,7 @@
 #include "Core/HLE/HLE.h"
 #include "Core/HW/DVD/DVDInterface.h"
 #include "Core/HW/SI/SI.h"
+#include "Core/HW/Memmap.h"
 #include "Core/IOS/ES/ES.h"
 #include "Core/IOS/ES/Formats.h"
 #include "Core/PatchEngine.h"
@@ -293,6 +294,9 @@ void SConfig::SaveCoreSettings(IniFile& ini)
   core->Set("QoSEnabled", bQoSEnabled);
   core->Set("AdapterWarning", bAdapterWarning);
   core->Set("WiiNetplaySaveReplays", bSaveNetplayReplays);
+  core->Set("RAMOverrideEnable", bRAMOverrideEnable);
+  core->Set("MEM1Size", bMEM1Size);
+  core->Set("MEM2Size", bMEM2Size);
 }
 
 void SConfig::SaveMovieSettings(IniFile& ini)
@@ -605,6 +609,9 @@ void SConfig::LoadCoreSettings(IniFile& ini)
   core->Get("QoSEnabled", &bQoSEnabled, true);
   core->Get("AdapterWarning", &bAdapterWarning, true);
   core->Get("WiiNetplaySaveReplays", &bSaveNetplayReplays, true);
+  core->Get("RAMOverrideEnable", &bRAMOverrideEnable, false);
+  core->Get("MEM1Size", &bMEM1Size, Memory::MEM1_SIZE_RETAIL);
+  core->Get("MEM2Size", &bMEM2Size, Memory::MEM2_SIZE_RETAIL);
 }
 
 void SConfig::LoadMovieSettings(IniFile& ini)

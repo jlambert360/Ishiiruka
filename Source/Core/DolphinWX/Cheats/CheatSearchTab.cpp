@@ -191,7 +191,7 @@ void CheatSearchTab::OnNewScanClicked(wxCommandEvent& WXUNUSED(event))
 
   // Set up the search results efficiently to prevent automatic re-allocations.
   m_search_results.clear();
-  m_search_results.reserve(Memory::RAM_SIZE / m_search_type_size);
+  m_search_results.reserve(Memory::GetRamSize() / m_search_type_size);
 
   // Enable the "Next Scan" button.
   m_scan_is_initialized = true;
@@ -199,7 +199,7 @@ void CheatSearchTab::OnNewScanClicked(wxCommandEvent& WXUNUSED(event))
 
   CheatSearchResult r;
   // can I assume cheatable values will be aligned like this?
-  for (u32 addr = 0; addr != Memory::RAM_SIZE; addr += m_search_type_size)
+  for (u32 addr = 0; addr != Memory::GetRamSize(); addr += m_search_type_size)
   {
     r.address = addr;
     memcpy(&r.old_value, &Memory::m_pRAM[addr], m_search_type_size);
@@ -241,11 +241,11 @@ void CheatSearchTab::OnAddAddressClicked(wxCommandEvent&)
     return;
   }
 
-  if (parsed_address > Memory::RAM_SIZE - sizeof(double))
+  if (parsed_address > Memory::GetRamSize() - sizeof(double))
   {
     WxUtils::ShowErrorDialog(wxString::Format(_("Address too large (greater than RAM size).\n"
       "Did you mean to strip the cheat opcode (0x%08X)?"),
-      parsed_address & Memory::RAM_MASK));
+      parsed_address & Memory::GetRamMask()));
     return;
   }
 

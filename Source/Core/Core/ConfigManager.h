@@ -116,6 +116,9 @@ struct SConfig
   bool bAllowSdWriting = true;
   bool bCopyWiiSaveNetplay = true;
   bool bSaveNetplayReplays = true;
+  bool bRAMOverrideEnable;
+  u32 bMEM1Size;
+  u32 bMEM2Size;
 
   bool bDPL2Decoder = false;
   int iLatency = 20;

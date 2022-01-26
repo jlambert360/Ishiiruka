@@ -53,6 +53,14 @@ enum IPCCommandType : u32
   IPC_REPLY = 8,
 };
 
+enum class MemorySetupType
+{
+  IOSReload,
+  Full,
+};
+
+void RAMOverrideForIOSMemoryValues(MemorySetupType setup_type);
+
 enum ProcessId : u32
 {
   PID_KERNEL = 0,
