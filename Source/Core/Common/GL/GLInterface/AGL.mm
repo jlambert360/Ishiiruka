@@ -36,10 +36,11 @@ static bool AttachContextToView(NSOpenGLContext* context, NSView* view, u32* wid
   }
 
   (void)UpdateCachedDimensions(view, width, height);
-
-  [window makeFirstResponder:view];
-  [context setView:view];
-  [window makeKeyAndOrderFront:nil];
+  dispatch_sync(dispatch_get_main_queue(), ^{
+    [window makeFirstResponder:view];
+    [context setView:view];
+    [window makeKeyAndOrderFront:nil];
+  });
 
   return true;
 }
