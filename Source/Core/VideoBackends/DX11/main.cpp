@@ -204,9 +204,8 @@ void VideoBackend::Video_Cleanup()
   CleanupShared();
 }
 
-}  // namespace DX11
-
 void VideoBackend::PrepareWindow(void* window_handle)
 {
 
 }
+}  // namespace DX11
