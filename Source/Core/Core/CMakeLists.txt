@@ -311,9 +311,7 @@ if(LIBUSB_FOUND)
   )
 endif()
 
-if(NOT APPLE)
-  target_link_libraries(core PUBLIC videovulkan)
-endif()
+target_link_libraries(core PUBLIC videovulkan)
 
 if(WIN32)
   target_sources(core PRIVATE

@@ -7,7 +7,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
   add_subdirectory(D3D12)
 endif()
 
-if(NOT APPLE)
 add_subdirectory(Vulkan)
-endif()
+
 # TODO: Add other backends here!

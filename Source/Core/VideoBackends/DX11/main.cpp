@@ -205,3 +205,8 @@ void VideoBackend::Video_Cleanup()
 }
 
 }  // namespace DX11
+
+void VideoBackend::PrepareWindow(void* window_handle)
+{
+
+}

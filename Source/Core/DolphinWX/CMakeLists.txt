@@ -155,6 +155,12 @@ if(APPLE)
     OUTPUT_NAME Dolphin
     )
 
+  # Link MoltenVK for the Vulkan (experimental) backend; the framework is
+  # added into the bundle in Tools/deploy-mac.py due to legacy build reasons.
+  find_library(MOLTENVK libvulkan.dylib PATHS ${CMAKE_SOURCE_DIR}/Externals/MoltenVK)
+  message("MoltenVK Path: ${MOLTENVK}")
+  target_link_libraries("${DOLPHIN_EXE}" ${MOLTENVK})
+
   # Copy resources in the bundle
   set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/Data/Sys")
   file(GLOB_RECURSE resources RELATIVE "${CMAKE_SOURCE_DIR}/Data" "${CMAKE_SOURCE_DIR}/Data/Sys/*")

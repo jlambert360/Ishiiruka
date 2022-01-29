@@ -227,3 +227,8 @@ void VideoBackend::Video_Cleanup()
 }
 
 }
+
+void VideoBackend::PrepareWindow(void* window_handle)
+{
+
+}
