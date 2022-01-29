@@ -159,7 +159,7 @@ if(APPLE)
   # added into the bundle in Tools/deploy-mac.py due to legacy build reasons.
   find_library(MOLTENVK libvulkan.dylib PATHS ${CMAKE_SOURCE_DIR}/Externals/MoltenVK)
   message("MoltenVK Path: ${MOLTENVK}")
-  target_link_libraries("${DOLPHIN_EXE}" ${MOLTENVK})
+  target_link_libraries(ishiiruka PRIVATE ${MOLTENVK})
 
   # Copy resources in the bundle
   set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/Data/Sys")
