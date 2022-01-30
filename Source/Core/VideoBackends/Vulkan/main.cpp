@@ -121,7 +121,7 @@ bool VideoBackend::Initialize(void* window_handle)
   bool enable_surface = window_handle != nullptr;
   bool enable_debug_reports = ShouldEnableDebugReports(enable_validation_layer);
   VkInstance instance = VulkanContext::CreateVulkanInstance(enable_surface, enable_debug_reports,
-                                                            enable_validation_layer);
+    enable_validation_layer);
   if (instance == VK_NULL_HANDLE)
   {
     PanicAlert("Failed to create Vulkan instance.");
@@ -179,7 +179,7 @@ bool VideoBackend::Initialize(void* window_handle)
 
   // Pass ownership over to VulkanContext, and let it take care of everything.
   g_vulkan_context = VulkanContext::Create(instance, gpu_list[selected_adapter_index], surface,
-                                           enable_debug_reports, enable_validation_layer);
+    enable_debug_reports, enable_validation_layer);
   if (!g_vulkan_context)
   {
     PanicAlert("Failed to create Vulkan device");
@@ -222,9 +222,8 @@ bool VideoBackend::Initialize(void* window_handle)
   // Invoke init methods on main wrapper classes.
   // These have to be done before the others because the destructors
   // for the remaining classes may call methods on these.
-  if (!g_object_cache->Initialize() || !g_shader_cache->Initialize() ||
-      !FramebufferManager::GetInstance()->Initialize() || !StateTracker::CreateInstance() ||
-      !Renderer::GetInstance()->Initialize())
+  if (!g_object_cache->Initialize() || !g_shader_cache->Initialize() || !FramebufferManager::GetInstance()->Initialize() ||
+    !StateTracker::CreateInstance() || !Renderer::GetInstance()->Initialize())
   {
     PanicAlert("Failed to initialize Vulkan classes.");
     g_vertex_manager.reset();
@@ -240,11 +239,11 @@ bool VideoBackend::Initialize(void* window_handle)
   }
 
   // Create remaining wrapper instances.
-
+  
   g_texture_cache = std::make_unique<TextureCache>();
   g_perf_query = std::make_unique<PerfQuery>();
   if (!VertexManager::GetInstance()->Initialize() || !TextureCache::GetInstance()->Initialize() ||
-      !PerfQuery::GetInstance()->Initialize())
+    !PerfQuery::GetInstance()->Initialize())
   {
     PanicAlert("Failed to initialize Vulkan classes.");
     g_perf_query.reset();
@@ -271,9 +270,9 @@ void VideoBackend::Video_Prepare()
 {
   // Display the name so the user knows which device was actually created
   OSD::AddMessage(StringFromFormat("Using physical adapter %s",
-                                   g_vulkan_context->GetDeviceProperties().deviceName)
-                      .c_str(),
-                  5000);
+    g_vulkan_context->GetDeviceProperties().deviceName)
+    .c_str(),
+    5000);
 }
 
 void VideoBackend::Shutdown()
@@ -307,13 +306,12 @@ void VideoBackend::Video_Cleanup()
   CleanupShared();
 }
 
-void VideoBackend::PrepareWindow(void* window_handle)
-{
+void VideoBackend::PrepareWindow(void* window_handle) {
 #if defined(VK_USE_PLATFORM_METAL_EXT)
   id view = reinterpret_cast<id>(window_handle);
 
   // This is kinda messy, but it avoids having to write Objective C++ just to create a metal layer.
-  // id view = reinterpret_cast<id>(wsi.render_surface);
+  //id view = reinterpret_cast<id>(wsi.render_surface);
   Class clsCAMetalLayer = objc_getClass("CAMetalLayer");
   if (!clsCAMetalLayer)
   {
@@ -323,7 +321,7 @@ void VideoBackend::PrepareWindow(void* window_handle)
 
   // [CAMetalLayer layer]
   id layer = reinterpret_cast<id (*)(Class, SEL)>(objc_msgSend)(objc_getClass("CAMetalLayer"),
-                                                                sel_getUid("layer"));
+                                                              sel_getUid("layer"));
   if (!layer)
   {
     ERROR_LOG(VIDEO, "Failed to create Metal layer.");
@@ -338,16 +336,16 @@ void VideoBackend::PrepareWindow(void* window_handle)
 
   // NSScreen* screen = [NSScreen mainScreen]
   id screen = reinterpret_cast<id (*)(Class, SEL)>(objc_msgSend)(objc_getClass("NSScreen"),
-                                                                 sel_getUid("mainScreen"));
+                                                               sel_getUid("mainScreen"));
 
   // CGFloat factor = [screen backingScaleFactor]
   double factor =
-      reinterpret_cast<double (*)(id, SEL)>(objc_msgSend)(screen, sel_getUid("backingScaleFactor"));
+    reinterpret_cast<double (*)(id, SEL)>(objc_msgSend)(screen, sel_getUid("backingScaleFactor"));
 
   // layer.contentsScale = factor
   reinterpret_cast<void (*)(id, SEL, double)>(objc_msgSend)(layer, sel_getUid("setContentsScale:"),
-                                                            factor);
+                                                          factor);
 #endif
 }
 
-}  // namespace Vulkan
+}
