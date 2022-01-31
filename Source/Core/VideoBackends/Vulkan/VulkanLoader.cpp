@@ -111,9 +111,9 @@ bool LoadVulkanLibrary()
     return true;
   }
 
-#if defined(__APPLE__)
-	// Check if a path to a specific Vulkan library has been specified.
-	char *libvulkan_env = getenv("LIBVULKAN_PATH");
+  #if defined(__APPLE__)
+  // Check if a path to a specific Vulkan library has been specified.
+  char* libvulkan_env = getenv("LIBVULKAN_PATH");
   if (libvulkan_env)
     vulkan_module = dlopen(libvulkan_env, RTLD_NOW);
   if (!vulkan_module)
@@ -121,10 +121,12 @@ bool LoadVulkanLibrary()
     // Use the libvulkan.dylib from the application bundle.
     std::string path = File::GetBundleDirectory() + "/Contents/Frameworks/libvulkan.dylib";
     vulkan_module = dlopen(path.c_str(), RTLD_NOW);
-	}
+  }
 #else
+
   // Names of libraries to search. Desktop should use libvulkan.so.1 or libvulkan.so.
   static const char *search_lib_names[] = {"libvulkan.so.1", "libvulkan.so"};
+
   for (size_t i = 0; i < ArraySize(search_lib_names); i++)
   {
     vulkan_module = dlopen(search_lib_names[i], RTLD_NOW);
@@ -189,7 +191,7 @@ bool LoadVulkanInstanceFunctions(VkInstance instance)
     }
   };
 
-#define VULKAN_INSTANCE_ENTRY_POINT(name, required)                                                                    \
+#define VULKAN_INSTANCE_ENTRY_POINT(name, required)                                                \
   LoadFunction(reinterpret_cast<PFN_vkVoidFunction *>(&name), #name, required);
 #include "VideoBackends/Vulkan/VulkanEntryPoints.inl"
 #undef VULKAN_INSTANCE_ENTRY_POINT
@@ -209,7 +211,7 @@ bool LoadVulkanDeviceFunctions(VkDevice device)
     }
   };
 
-#define VULKAN_DEVICE_ENTRY_POINT(name, required)                                                                      \
+#define VULKAN_DEVICE_ENTRY_POINT(name, required)                                                  \
   LoadFunction(reinterpret_cast<PFN_vkVoidFunction *>(&name), #name, required);
 #include "VideoBackends/Vulkan/VulkanEntryPoints.inl"
 #undef VULKAN_DEVICE_ENTRY_POINT
